@@ -15,6 +15,11 @@ to query remote parquet files}
 \description{
 produce a tbl with genomic annotation using a remote parquet file
 }
+\note{
+DBI::dbListTables is used to query connection for existence of
+the desired table/view, which is returned if present.  Otherwise
+an httpfs based query is used to produce a view.
+}
 \examples{
 con = DBI::dbConnect(duckdb::duckdb())
 query_osn(con, stub="gene_info")

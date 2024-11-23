@@ -26,8 +26,56 @@ basic types of annotation:
 - Genome centric (e.g., transcript catalogs)
 - Service client (e.g., biomart)
 
+Here's an illustration of usage of the current methodology
+for interrogating Bioconductor annotation.  We consider
+how to learn the Gene Ontology categories
+for gene ORMDL3 which have evidence code TAS (traceable author statement).
 ```{r lkhs, message=FALSE}
 library(org.Hs.eg.db)
-AnnotationDbi::select(org.Hs.eg.db, keytype="SYMBOL", keys="ORMDL3",
-  columns="GO")
+library(GO.db)
+tas1 = AnnotationDbi::select(org.Hs.eg.db, keytype="SYMBOL", keys="ORMDL3",
+  columns="GO") |> dplyr::filter(EVIDENCE=="TAS")
+cats = tas1$GO
+AnnotationDbi::select(GO.db, keytype="GOID", keys = cats, columns="TERM")
 ```
+This example involves two different annotation packages and an
+idiosyncratic (though widely used) approach to querying the information.
+
+In the following, we use two table references in a new parquet-based
+cloud-resident
+system to obtain the same information.
+
+```{r lkduck, message=FALSE}
+library(BiocAnnoParq)
+con = DBI::dbConnect(duckdb::duckdb())
+gi = query_osn(con, "gene_info")
+ggo = query_osn(con, "gene2go")
+otas = dplyr::left_join(gi |> dplyr::filter(symbol == "ORMDL3"), 
+                        ggo |> dplyr::filter(evidence=="TAS"),
+          by="gene_id")
+otas
+DBI::dbDisconnect(con)
+```
+
+A "pure SQL" solution is also available, with R used only
+to manage connections and query retrieval.
+
+```{r lkpure}
+con = DBI::dbConnect(duckdb::duckdb())
+DBI::dbExecute(con, "INSTALL httpfs from core_nightly;")
+DBI::dbExecute(con, "LOAD httpfs;")     
+stmt = sprintf("CREATE VIEW gene_info as select * from parquet_scan(%s);
+     CREATE VIEW gene2go as select * from parquet_scan(%s);     
+     CREATE VIEW gor as select * from gene_info where symbol = 'ORMDL3';
+     CREATE VIEW tas as select * from gene2go where evidence = 'TAS';
+     SELECT * FROM gor INNER JOIN tas ON gor.gene_id = tas.gene_id;",
+     sQuote(make_parq_url("gene_info")), sQuote(make_parq_url("gene2go")))
+z = DBI::dbSendQuery(con, stmt)
+DBI::dbFetch(z)
+DBI::dbClearResult(z)
+DBI::dbDisconnect(con)
+```
+
+
+q = "SELECT * FROM gene_info where symbol = 'ORMDL3'"
+dbFetchQuery(con, q)

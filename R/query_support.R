@@ -9,7 +9,10 @@
 ## remote code
 #
 #
-# support for URL generation
+
+#' support for URL generation based on NSF OSN bucket
+#' @param stub character(1) string like gene2go
+#' @export
 make_parq_url = function(stub) {
 stub = sub("parquet$", "", stub)
 sprintf("https://mghp.osn.xsede.org/bir190004-bucket01/BiocParquetAnno/%s.parquet", stub)
@@ -34,6 +37,9 @@ sprintf("https://mghp.osn.xsede.org/bir190004-bucket01/BiocParquetAnno/%s.parque
 #' @param con a DBI connection, typically using duckdb, that can be used
 #' to query remote parquet files
 #' @param stub character(1) tag identifying an annotation resource
+#' @note DBI::dbListTables is used to query connection for existence of
+#' the desired table/view, which is returned if present.  Otherwise
+#' an httpfs based query is used to produce a view.
 #' @examples
 #' con = DBI::dbConnect(duckdb::duckdb())
 #' query_osn(con, stub="gene_info")
@@ -41,12 +47,13 @@ sprintf("https://mghp.osn.xsede.org/bir190004-bucket01/BiocParquetAnno/%s.parque
 #' DBI::dbDisconnect(con)
 #' @export
 query_osn = function(con, stub="gene_info") {
- stopifnot(stub %in% .stubs)
- url = make_parq_url(stub)
- dbExecute(con, "INSTALL httpfs from core_nightly;")
- dbExecute(con, "LOAD httpfs;")
- dbExecute(con, sprintf("create view %s as select * from parquet_scan(%s)", stub, sQuote(url)))
- tbl(con, stub)
+    stopifnot(stub %in% .stubs)
+    tablist = DBI::dbListTables(con)
+    if (stub %in% tablist) return(tbl(con, stub)) # view already available
+    url = make_parq_url(stub)
+    dbExecute(con, "INSTALL httpfs from core_nightly;")
+    dbExecute(con, "LOAD httpfs;")
+    dbExecute(con, sprintf("create view %s as select * from parquet_scan(%s)", 
+        stub, sQuote(url)))
+    tbl(con, stub)
 }
-
-#query_osn(con=con) |> filter(map_location %LIKE% '8p%')

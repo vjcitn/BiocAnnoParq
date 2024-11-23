@@ -1,0 +1,33 @@
+---
+title: "BiocAnnoParq: SQL-based interrogation of Bioconductor's curated genomic annotation"
+shorttitle: "SQL-based genomic annotation"
+author: "Vincent J. Carey, stvjc at channing.harvard.edu"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{BiocAnnoParq: SQL-based interrogation of Bioconductor's curated genomic annotation}
+  %\VignetteEncoding{UTF-8}
+output:
+  BiocStyle::html_document:
+    highlight: pygments
+    number_sections: yes
+    theme: united
+    toc: yes
+---
+
+# Introduction
+
+Bioconductor's annotation curation pipelines and products have a 17
+year history of supporting many aspects of data analysis in
+genome-scale biology.  The AnnotationDbi package defines three
+basic types of annotation:
+
+- Gene centric (with subclasses organism, platform, and system)
+- Genome centric (e.g., transcript catalogs)
+- Service client (e.g., biomart)
+
+```{r lkhs, message=FALSE}
+library(org.Hs.eg.db)
+AnnotationDbi::select(org.Hs.eg.db, keytype="SYMBOL", keys="ORMDL3",
+  columns="GO")
+```

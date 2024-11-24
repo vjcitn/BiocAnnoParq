@@ -54,6 +54,6 @@ query_osn = function(con, stub="gene_info") {
     dbExecute(con, "INSTALL httpfs from core_nightly;")
     dbExecute(con, "LOAD httpfs;")
     dbExecute(con, sprintf("create view %s as select * from parquet_scan(%s)", 
-        stub, sQuote(url)))
+        stub, sQuote(url, q=FALSE)))
     tbl(con, stub)
 }

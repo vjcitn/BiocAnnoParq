@@ -20,7 +20,7 @@
 local_table = function(con, stub, path) {
  stub = gsub(".parquet", "", stub) # can't have dot
  DBI::dbExecute(con, sprintf("create view %s as select * from parquet_scan(%s)", 
-        stub, sQuote(path)))
+        stub, sQuote(path, q=FALSE)))
  dplyr::tbl(con, stub)
 }
 

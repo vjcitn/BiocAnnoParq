@@ -14,7 +14,7 @@
 #' @param stub character(1) string like gene2go
 #' @export
 make_parq_url = function(stub) {
-stub = sub("parquet$", "", stub)
+stub = sub(".parquet$", "", stub)
 sprintf("https://mghp.osn.xsede.org/bir190004-bucket01/BiocParquetAnno/%s.parquet", stub)
 }
 

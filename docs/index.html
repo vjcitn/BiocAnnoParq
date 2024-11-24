@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">BiocAnnoParq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,7 +48,29 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="biocannoparq">BiocAnnoParq<a class="anchor" aria-label="anchor" href="#biocannoparq"></a>
 </h1></div>
-<p>SQL-based interfaces to Bioconductor’s curated genomic annotation</p>
+<div class="section level2">
+<h2 id="sql-based-interfaces-to-bioconductors-curated-genomic-annotation">SQL-based interfaces to Bioconductor’s curated genomic annotation<a class="anchor" aria-label="anchor" href="#sql-based-interfaces-to-bioconductors-curated-genomic-annotation"></a>
+</h2>
+<p>The purpose of this package is to examine reliability and performance impacts of reformulating Bioconductor’s curation procedures for general genomic annotation.</p>
+<p>The AnnotationDbi idiom involves multiple packages and a bespoke interface using concepts of keys and columns. Thus to identify the three Gene Ontology categories to which gene ORMDL3 has been annotated with traceable author statements, we have:</p>
+<pre><code><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">org.Hs.eg.db</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">GO.db</span><span class="op">)</span></span>
+<span><span class="va">tas1</span> <span class="op">=</span> <span class="fu">AnnotationDbi</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/AnnotationDbi/man/AnnotationDb-class.html" class="external-link">select</a></span><span class="op">(</span><span class="va">org.Hs.eg.db</span>, keytype<span class="op">=</span><span class="st">"SYMBOL"</span>, keys<span class="op">=</span><span class="st">"ORMDL3"</span>,</span>
+<span>  columns<span class="op">=</span><span class="st">"GO"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">EVIDENCE</span><span class="op">==</span><span class="st">"TAS"</span><span class="op">)</span></span>
+<span><span class="va">cats</span> <span class="op">=</span> <span class="va">tas1</span><span class="op">$</span><span class="va">GO</span></span>
+<span><span class="fu">AnnotationDbi</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/AnnotationDbi/man/AnnotationDb-class.html" class="external-link">select</a></span><span class="op">(</span><span class="va">GO.db</span>, keytype<span class="op">=</span><span class="st">"GOID"</span>, keys <span class="op">=</span> <span class="va">cats</span>, columns<span class="op">=</span><span class="st">"TERM"</span><span class="op">)</span></span></code></pre>
+<p>With this package, more standard query processes are supported. For example this chunk uses standard dplyr syntax to query cloud-resident parquet files:</p>
+<pre><code><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/vjcitn" class="external-link">BiocAnnoParq</a></span><span class="op">)</span></span>
+<span><span class="va">con</span> <span class="op">=</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">gi</span> <span class="op">=</span> <span class="fu"><a href="reference/query_osn.html">query_osn</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"gene_info"</span><span class="op">)</span></span>
+<span><span class="va">ggo</span> <span class="op">=</span> <span class="fu"><a href="reference/query_osn.html">query_osn</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"gene2go"</span><span class="op">)</span></span>
+<span><span class="va">otas</span> <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">gi</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">symbol</span> <span class="op">==</span> <span class="st">"ORMDL3"</span><span class="op">)</span>,</span>
+<span>                        <span class="va">ggo</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">evidence</span><span class="op">==</span><span class="st">"TAS"</span><span class="op">)</span>,</span>
+<span>          by<span class="op">=</span><span class="st">"gene_id"</span><span class="op">)</span></span>
+<span><span class="va">otas</span></span></code></pre>
+<p>The <code>query_osn</code> function arranges connections to tables derived from NCBI resources using tooling in the BioconductorAnnotationPipeline stack.</p>
+<p>The use of parquet appears to produce at least 10-fold reductions in file size. Code complexity is also reduced with this approach, which does permit queries in pure SQL.</p>
+</div>
 </div>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>

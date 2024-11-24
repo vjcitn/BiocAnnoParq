@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BiocAnnoParq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -69,7 +69,10 @@
 <li>Genome centric (e.g., transcript catalogs)</li>
 <li>Service client (e.g., biomart)</li>
 </ul>
-<p>Here’s an illustration of usage of the current methodology for interrogating Bioconductor annotation. We consider how to learn the Gene Ontology categories for gene ORMDL3 which have evidence code TAS (traceable author statement).</p>
+<div class="section level3">
+<h3 id="annotationdbi-based-queries">AnnotationDbi-based queries<a class="anchor" aria-label="anchor" href="#annotationdbi-based-queries"></a>
+</h3>
+<p>Here’s an illustration of usage of the current methodology for interrogating Bioconductor annotation. We consider how to retrieve the Gene Ontology categories for gene ORMDL3 which have evidence code TAS (traceable author statement).</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">org.Hs.eg.db</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">GO.db</span><span class="op">)</span></span>
@@ -82,7 +85,14 @@
 <span><span class="co">## 2 GO:0030667 secretory granule membrane</span></span>
 <span><span class="co">## 3 GO:0035579  specific granule membrane</span></span></code></pre>
 <p>This example involves two different annotation packages and an idiosyncratic (though widely used) approach to querying the information.</p>
-<p>In the following, we use two table references in a new parquet-based cloud-resident system to obtain the same information.</p>
+</div>
+<div class="section level3">
+<h3 id="biocannoparq-queries">BiocAnnoParq queries<a class="anchor" aria-label="anchor" href="#biocannoparq-queries"></a>
+</h3>
+<div class="section level4">
+<h4 id="queries-to-cloud-resident-parquet">Queries to cloud-resident parquet<a class="anchor" aria-label="anchor" href="#queries-to-cloud-resident-parquet"></a>
+</h4>
+<p>In the following, we use two table references in a new parquet-based cloud-resident system to obtain the same information. The <code>query_osn</code> function sets up an HTTPS connection to files in a bucket in the NSF Open Storage Network.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/vjcitn" class="external-link">BiocAnnoParq</a></span><span class="op">)</span></span>
 <span><span class="va">con</span> <span class="op">=</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
@@ -110,13 +120,9 @@
 <p>A “pure SQL” solution is also available, with R used only to manage connections and query retrieval.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">con</span> <span class="op">=</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbExecute.html" class="external-link">dbExecute</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"INSTALL httpfs from core_nightly;"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 0</span></span></code></pre>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbExecute.html" class="external-link">dbExecute</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"LOAD httpfs;"</span><span class="op">)</span>     </span></code></pre></div>
-<pre><code><span><span class="co">## [1] 0</span></span></code></pre>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">stmt</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"CREATE VIEW gene_info as select * from parquet_scan(%s);</span></span>
+<span><span class="va">chk</span> <span class="op">=</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbExecute.html" class="external-link">dbExecute</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"INSTALL httpfs from core_nightly;"</span><span class="op">)</span></span>
+<span><span class="va">chk</span> <span class="op">=</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbExecute.html" class="external-link">dbExecute</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"LOAD httpfs;"</span><span class="op">)</span>     </span>
+<span><span class="va">stmt</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"CREATE VIEW gene_info as select * from parquet_scan(%s);</span></span>
 <span><span class="st">     CREATE VIEW gene2go as select * from parquet_scan(%s);     </span></span>
 <span><span class="st">     CREATE VIEW gor as select * from gene_info where symbol = 'ORMDL3';</span></span>
 <span><span class="st">     CREATE VIEW tas as select * from gene2go where evidence = 'TAS';</span></span>
@@ -152,10 +158,66 @@
 <span><span class="co">## 1      TAS   located_in  specific granule membrane         - Component</span></span>
 <span><span class="co">## 2      TAS   located_in secretory granule membrane         - Component</span></span>
 <span><span class="co">## 3      TAS   located_in            plasma membrane         - Component</span></span></code></pre>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbClearResult.html" class="external-link">dbClearResult</a></span><span class="op">(</span><span class="va">z</span><span class="op">)</span></span>
 <span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span></code></pre></div>
-<p>q = “SELECT * FROM gene_info where symbol = ‘ORMDL3’” dbFetchQuery(con, q)</p>
+</div>
+<div class="section level4">
+<h4 id="queries-to-local-cache">Queries to local cache<a class="anchor" aria-label="anchor" href="#queries-to-local-cache"></a>
+</h4>
+<p>The <code>get_local_table</code> will retrieve parquet from the OSN bucket if needed.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">BiocFileCache</span><span class="op">)</span></span>
+<span><span class="va">ca</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocFileCache/man/BiocFileCache-class.html" class="external-link">BiocFileCache</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">con</span> <span class="op">=</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">gi</span> <span class="op">=</span> <span class="fu"><a href="../reference/get_local_table.html">get_local_table</a></span><span class="op">(</span><span class="st">"gene_info.parquet"</span>, <span class="va">con</span>, <span class="va">ca</span><span class="op">)</span></span>
+<span><span class="va">ggo</span> <span class="op">=</span> <span class="fu"><a href="../reference/get_local_table.html">get_local_table</a></span><span class="op">(</span><span class="st">"gene2go.parquet"</span>, <span class="va">con</span>, <span class="va">ca</span><span class="op">)</span></span>
+<span><span class="va">otas</span> <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">gi</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">symbol</span> <span class="op">==</span> <span class="st">"ORMDL3"</span><span class="op">)</span>, </span>
+<span>                        <span class="va">ggo</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">evidence</span><span class="op">==</span><span class="st">"TAS"</span><span class="op">)</span>,</span>
+<span>          by<span class="op">=</span><span class="st">"gene_id"</span><span class="op">)</span></span>
+<span><span class="va">otas</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="color: #949494;"># Source:   SQL [3 x 23]</span></span></span>
+<span><span class="co">## <span style="color: #949494;"># Database: DuckDB v1.1.3-dev165 [vincentcarey@Darwin 23.6.0:R 4.4.2/:memory:]</span></span></span>
+<span><span class="co">##   tax_id.x gene_id symbol locus_tag synonyms dbXrefs     chromosome map_location</span></span>
+<span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">9</span>606   <span style="text-decoration: underline;">94</span>103 ORMDL3 -         -        MIM:610075… 17         17q21.1     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">9</span>606   <span style="text-decoration: underline;">94</span>103 ORMDL3 -         -        MIM:610075… 17         17q21.1     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span>     <span style="text-decoration: underline;">9</span>606   <span style="text-decoration: underline;">94</span>103 ORMDL3 -         -        MIM:610075… 17         17q21.1     </span></span>
+<span><span class="co">## <span style="color: #949494;"># ℹ 15 more variables: description &lt;chr&gt;, gene_type &lt;chr&gt;,</span></span></span>
+<span><span class="co">## <span style="color: #949494;">#   nomenclature_symbol &lt;chr&gt;, nomenclature_name &lt;chr&gt;,</span></span></span>
+<span><span class="co">## <span style="color: #949494;">#   nomenclature_status &lt;chr&gt;, other_designations &lt;chr&gt;,</span></span></span>
+<span><span class="co">## <span style="color: #949494;">#   modification_date &lt;chr&gt;, feature_type &lt;chr&gt;, tax_id.y &lt;dbl&gt;, go_id &lt;chr&gt;,</span></span></span>
+<span><span class="co">## <span style="color: #949494;">#   evidence &lt;chr&gt;, go_qualifier &lt;chr&gt;, go_description &lt;chr&gt;, pubmed_id &lt;chr&gt;,</span></span></span>
+<span><span class="co">## <span style="color: #949494;">#   category &lt;chr&gt;</span></span></span></code></pre>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="rationale-for-the-legacy-approach">Rationale for the legacy approach<a class="anchor" aria-label="anchor" href="#rationale-for-the-legacy-approach"></a>
+</h2>
+<p>NCBI files at <code>https://ftp.ncbi.nlm.nih.gov/gene/DATA/</code> for 11/23/2024.</p>
+<pre><code>gene2accession.gz               2024-11-23 02:30  3.4G  
+gene2ensembl.gz                 2024-11-23 02:30  239M  
+gene2go.gz                      2024-11-23 02:32  1.1G  
+gene2pubmed.gz                  2024-11-23 02:33  194M  
+gene2refseq.gz                  2024-11-23 02:35  1.7G  
+gene_group.gz                   2024-11-23 02:35  289K  
+gene_history.gz                 2024-11-23 02:35  139M  
+gene_info.gz                    2024-11-23 02:37  1.2G  
+gene_neighbors.gz               2024-11-23 02:39  1.5G  
+gene_orthologs.gz               2024-11-23 02:39   87M  
+gene_refseq_uniprotkb_collab.gz 2024-11-21 05:23  1.0G  
+go_process.dtd                  2023-09-11 09:48  1.4K  
+go_process.xml                  2024-07-09 16:13  8.0K  
+mim2gene_medgen                 2024-11-23 05:08  832K  </code></pre>
+<p>For humans, the Bioconductor pipeline produces an 8.8GB SQLite database with tables:</p>
+<pre><code>sqlite&gt; .tables
+gene2accession     gene2refseq        gene_info          metadata         
+gene2go            gene_chromosome    gene_map_location  mim2gene         
+gene2pubmed        gene_dbXref        gene_synonym       refseq_uniprot   </code></pre>
+<p>These are then reorganized into an “orgDb” package</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

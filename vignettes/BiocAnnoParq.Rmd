@@ -26,9 +26,11 @@ basic types of annotation:
 - Genome centric (e.g., transcript catalogs)
 - Service client (e.g., biomart)
 
+## AnnotationDbi-based queries
+
 Here's an illustration of usage of the current methodology
 for interrogating Bioconductor annotation.  We consider
-how to learn the Gene Ontology categories
+how to retrieve the Gene Ontology categories
 for gene ORMDL3 which have evidence code TAS (traceable author statement).
 ```{r lkhs, message=FALSE}
 library(org.Hs.eg.db)
@@ -41,9 +43,15 @@ AnnotationDbi::select(GO.db, keytype="GOID", keys = cats, columns="TERM")
 This example involves two different annotation packages and an
 idiosyncratic (though widely used) approach to querying the information.
 
+## BiocAnnoParq queries
+
+### Queries to cloud-resident parquet
+
 In the following, we use two table references in a new parquet-based
 cloud-resident
-system to obtain the same information.
+system to obtain the same information.  The `query_osn` function
+sets up an HTTPS connection to files in a bucket in the NSF
+Open Storage Network.
 
 ```{r lkduck, message=FALSE}
 library(BiocAnnoParq)
@@ -62,8 +70,8 @@ to manage connections and query retrieval.
 
 ```{r lkpure}
 con = DBI::dbConnect(duckdb::duckdb())
-DBI::dbExecute(con, "INSTALL httpfs from core_nightly;")
-DBI::dbExecute(con, "LOAD httpfs;")     
+chk = DBI::dbExecute(con, "INSTALL httpfs from core_nightly;")
+chk = DBI::dbExecute(con, "LOAD httpfs;")     
 stmt = sprintf("CREATE VIEW gene_info as select * from parquet_scan(%s);
      CREATE VIEW gene2go as select * from parquet_scan(%s);     
      CREATE VIEW gor as select * from gene_info where symbol = 'ORMDL3';
@@ -76,6 +84,51 @@ DBI::dbClearResult(z)
 DBI::dbDisconnect(con)
 ```
 
+### Queries to local cache
 
-q = "SELECT * FROM gene_info where symbol = 'ORMDL3'"
-dbFetchQuery(con, q)
+The `get_local_table` will retrieve parquet from the OSN bucket if
+needed.
+
+```{r lkloc, message=FALSE}
+library(BiocFileCache)
+ca = BiocFileCache()
+con = DBI::dbConnect(duckdb::duckdb())
+gi = get_local_table("gene_info.parquet", con, ca)
+ggo = get_local_table("gene2go.parquet", con, ca)
+otas = dplyr::left_join(gi |> dplyr::filter(symbol == "ORMDL3"), 
+                        ggo |> dplyr::filter(evidence=="TAS"),
+          by="gene_id")
+otas
+DBI::dbDisconnect(con)
+```
+
+
+# Rationale for the legacy approach
+
+NCBI files at `https://ftp.ncbi.nlm.nih.gov/gene/DATA/` for 11/23/2024.
+```
+gene2accession.gz               2024-11-23 02:30  3.4G  
+gene2ensembl.gz                 2024-11-23 02:30  239M  
+gene2go.gz                      2024-11-23 02:32  1.1G  
+gene2pubmed.gz                  2024-11-23 02:33  194M  
+gene2refseq.gz                  2024-11-23 02:35  1.7G  
+gene_group.gz                   2024-11-23 02:35  289K  
+gene_history.gz                 2024-11-23 02:35  139M  
+gene_info.gz                    2024-11-23 02:37  1.2G  
+gene_neighbors.gz               2024-11-23 02:39  1.5G  
+gene_orthologs.gz               2024-11-23 02:39   87M  
+gene_refseq_uniprotkb_collab.gz 2024-11-21 05:23  1.0G  
+go_process.dtd                  2023-09-11 09:48  1.4K  
+go_process.xml                  2024-07-09 16:13  8.0K  
+mim2gene_medgen                 2024-11-23 05:08  832K  
+```
+
+For humans,
+the Bioconductor pipeline produces an 8.8GB SQLite database with tables:
+```
+sqlite> .tables
+gene2accession     gene2refseq        gene_info          metadata         
+gene2go            gene_chromosome    gene_map_location  mim2gene         
+gene2pubmed        gene_dbXref        gene_synonym       refseq_uniprot   
+```
+These are then reorganized into an "orgDb" package

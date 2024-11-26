@@ -3,13 +3,13 @@
 \name{available_anno_parquet}
 \alias{available_anno_parquet}
 \title{use 'paws::s3' to interrogate an NSF Open Storage Network
-bucket for zipped zarr archives for various platforms}
+bucket for parquet serializations of genomic reference annotation}
 \usage{
 available_anno_parquet()
 }
 \description{
 use 'paws::s3' to interrogate an NSF Open Storage Network
-bucket for zipped zarr archives for various platforms
+bucket for parquet serializations of genomic reference annotation
 }
 \examples{
 if (requireNamespace("paws")) {

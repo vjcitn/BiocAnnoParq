@@ -58,10 +58,11 @@ library(BiocAnnoParq)
 con = DBI::dbConnect(duckdb::duckdb())
 gi = query_osn(con, "gene_info")
 ggo = query_osn(con, "gene2go")
-otas = dplyr::left_join(gi |> dplyr::filter(symbol == "ORMDL3"), 
+otas = dplyr::left_join(gi |> dplyr::filter(symbol == "ORMDL3"),
                         ggo |> dplyr::filter(evidence=="TAS"),
-          by="gene_id")
-otas
+          by="gene_id") 
+otas |> dplyr::select(go_id, evidence, go_description, category)
+otas |> colnames()
 DBI::dbDisconnect(con)
 ```
 
@@ -69,19 +70,21 @@ A "pure SQL" solution is also available, with R used only
 to manage connections and query retrieval.
 
 ```{r lkpure}
+library(duckdb)
+library(BiocAnnoParq)
 con = DBI::dbConnect(duckdb::duckdb())
 chk = DBI::dbExecute(con, "INSTALL httpfs from core_nightly;")
-chk = DBI::dbExecute(con, "LOAD httpfs;")     
-stmt = sprintf("CREATE VIEW gene_info as select * from parquet_scan(%s);
-     CREATE VIEW gene2go as select * from parquet_scan(%s);     
-     CREATE VIEW gor as select * from gene_info where symbol = 'ORMDL3';
-     CREATE VIEW tas as select * from gene2go where evidence = 'TAS';
-     SELECT * FROM gor INNER JOIN tas ON gor.gene_id = tas.gene_id;",
-     sQuote(make_parq_url("gene_info")), sQuote(make_parq_url("gene2go")))
+chk = DBI::dbExecute(con, "LOAD httpfs;")
+stmt = sprintf(
+"WITH gene_info AS ( SELECT * FROM parquet_scan(%s)),
+        gene2go AS ( SELECT * FROM parquet_scan(%s))
+ SELECT gi.* FROM gene_info gi
+ INNER JOIN gene2go g2g ON gi.gene_id = g2g.gene_id
+ WHERE gi.symbol = 'ORMDL3' AND g2g.evidence = 'TAS';",
+  sQuote(make_parq_url("gene_info"), q=FALSE),
+  sQuote(make_parq_url("gene2go"), q=FALSE))
 z = DBI::dbSendQuery(con, stmt)
 DBI::dbFetch(z)
-DBI::dbClearResult(z)
-DBI::dbDisconnect(con)
 ```
 
 ### Queries to local cache

@@ -1,6 +1,6 @@
 
 #' use 'paws::s3' to interrogate an NSF Open Storage Network
-#' bucket for zipped zarr archives for various platforms
+#' bucket for parquet serializations of genomic reference annotation
 #' @examples
 #' if (requireNamespace("paws")) {
 #'   available_anno_parquet()

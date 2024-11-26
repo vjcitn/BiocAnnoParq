@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BiocAnnoParq</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -98,36 +98,46 @@
 <span><span class="va">con</span> <span class="op">=</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">gi</span> <span class="op">=</span> <span class="fu"><a href="../reference/query_osn.html">query_osn</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"gene_info"</span><span class="op">)</span></span>
 <span><span class="va">ggo</span> <span class="op">=</span> <span class="fu"><a href="../reference/query_osn.html">query_osn</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"gene2go"</span><span class="op">)</span></span>
-<span><span class="va">otas</span> <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">gi</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">symbol</span> <span class="op">==</span> <span class="st">"ORMDL3"</span><span class="op">)</span>, </span>
+<span><span class="va">otas</span> <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">gi</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">symbol</span> <span class="op">==</span> <span class="st">"ORMDL3"</span><span class="op">)</span>,</span>
 <span>                        <span class="va">ggo</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">evidence</span><span class="op">==</span><span class="st">"TAS"</span><span class="op">)</span>,</span>
-<span>          by<span class="op">=</span><span class="st">"gene_id"</span><span class="op">)</span></span>
-<span><span class="va">otas</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># Source:   SQL [3 x 23]</span></span></span>
+<span>          by<span class="op">=</span><span class="st">"gene_id"</span><span class="op">)</span> </span>
+<span><span class="va">otas</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">go_id</span>, <span class="va">evidence</span>, <span class="va">go_description</span>, <span class="va">category</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="color: #949494;"># Source:   SQL [3 x 4]</span></span></span>
 <span><span class="co">## <span style="color: #949494;"># Database: DuckDB v1.1.3-dev165 [vincentcarey@Darwin 23.6.0:R 4.4.2/:memory:]</span></span></span>
-<span><span class="co">##   tax_id.x gene_id symbol locus_tag synonyms dbXrefs     chromosome map_location</span></span>
-<span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">9</span>606   <span style="text-decoration: underline;">94</span>103 ORMDL3 -         -        MIM:610075… 17         17q21.1     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">9</span>606   <span style="text-decoration: underline;">94</span>103 ORMDL3 -         -        MIM:610075… 17         17q21.1     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">3</span>     <span style="text-decoration: underline;">9</span>606   <span style="text-decoration: underline;">94</span>103 ORMDL3 -         -        MIM:610075… 17         17q21.1     </span></span>
-<span><span class="co">## <span style="color: #949494;"># ℹ 15 more variables: description &lt;chr&gt;, gene_type &lt;chr&gt;,</span></span></span>
-<span><span class="co">## <span style="color: #949494;">#   nomenclature_symbol &lt;chr&gt;, nomenclature_name &lt;chr&gt;,</span></span></span>
-<span><span class="co">## <span style="color: #949494;">#   nomenclature_status &lt;chr&gt;, other_designations &lt;chr&gt;,</span></span></span>
-<span><span class="co">## <span style="color: #949494;">#   modification_date &lt;chr&gt;, feature_type &lt;chr&gt;, tax_id.y &lt;dbl&gt;, go_id &lt;chr&gt;,</span></span></span>
-<span><span class="co">## <span style="color: #949494;">#   evidence &lt;chr&gt;, go_qualifier &lt;chr&gt;, go_description &lt;chr&gt;, pubmed_id &lt;chr&gt;,</span></span></span>
-<span><span class="co">## <span style="color: #949494;">#   category &lt;chr&gt;</span></span></span></code></pre>
+<span><span class="co">##   go_id      evidence go_description             category </span></span>
+<span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> GO:0005886 TAS      plasma membrane            Component</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> GO:0030667 TAS      secretory granule membrane Component</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span> GO:0035579 TAS      specific granule membrane  Component</span></span></code></pre>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">otas</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##  [1] "tax_id.x"            "gene_id"             "symbol"             </span></span>
+<span><span class="co">##  [4] "locus_tag"           "synonyms"            "dbXrefs"            </span></span>
+<span><span class="co">##  [7] "chromosome"          "map_location"        "description"        </span></span>
+<span><span class="co">## [10] "gene_type"           "nomenclature_symbol" "nomenclature_name"  </span></span>
+<span><span class="co">## [13] "nomenclature_status" "other_designations"  "modification_date"  </span></span>
+<span><span class="co">## [16] "feature_type"        "tax_id.y"            "go_id"              </span></span>
+<span><span class="co">## [19] "evidence"            "go_qualifier"        "go_description"     </span></span>
+<span><span class="co">## [22] "pubmed_id"           "category"</span></span></code></pre>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span></code></pre></div>
 <p>A “pure SQL” solution is also available, with R used only to manage connections and query retrieval.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">con</span> <span class="op">=</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r.duckdb.org/" class="external-link">duckdb</a></span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Loading required package: DBI</span></span></code></pre>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/vjcitn" class="external-link">BiocAnnoParq</a></span><span class="op">)</span></span>
+<span><span class="va">con</span> <span class="op">=</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">chk</span> <span class="op">=</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbExecute.html" class="external-link">dbExecute</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"INSTALL httpfs from core_nightly;"</span><span class="op">)</span></span>
-<span><span class="va">chk</span> <span class="op">=</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbExecute.html" class="external-link">dbExecute</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"LOAD httpfs;"</span><span class="op">)</span>     </span>
-<span><span class="va">stmt</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"CREATE VIEW gene_info as select * from parquet_scan(%s);</span></span>
-<span><span class="st">     CREATE VIEW gene2go as select * from parquet_scan(%s);     </span></span>
-<span><span class="st">     CREATE VIEW gor as select * from gene_info where symbol = 'ORMDL3';</span></span>
-<span><span class="st">     CREATE VIEW tas as select * from gene2go where evidence = 'TAS';</span></span>
-<span><span class="st">     SELECT * FROM gor INNER JOIN tas ON gor.gene_id = tas.gene_id;"</span>,</span>
-<span>     <span class="fu"><a href="https://rdrr.io/r/base/sQuote.html" class="external-link">sQuote</a></span><span class="op">(</span><span class="fu"><a href="../reference/make_parq_url.html">make_parq_url</a></span><span class="op">(</span><span class="st">"gene_info"</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/sQuote.html" class="external-link">sQuote</a></span><span class="op">(</span><span class="fu"><a href="../reference/make_parq_url.html">make_parq_url</a></span><span class="op">(</span><span class="st">"gene2go"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">chk</span> <span class="op">=</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbExecute.html" class="external-link">dbExecute</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"LOAD httpfs;"</span><span class="op">)</span></span>
+<span><span class="va">stmt</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span></span>
+<span><span class="st">"WITH gene_info AS ( SELECT * FROM parquet_scan(%s)),</span></span>
+<span><span class="st">        gene2go AS ( SELECT * FROM parquet_scan(%s))</span></span>
+<span><span class="st"> SELECT gi.* FROM gene_info gi</span></span>
+<span><span class="st"> INNER JOIN gene2go g2g ON gi.gene_id = g2g.gene_id</span></span>
+<span><span class="st"> WHERE gi.symbol = 'ORMDL3' AND g2g.evidence = 'TAS';"</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sQuote.html" class="external-link">sQuote</a></span><span class="op">(</span><span class="fu"><a href="../reference/make_parq_url.html">make_parq_url</a></span><span class="op">(</span><span class="st">"gene_info"</span><span class="op">)</span>, q<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sQuote.html" class="external-link">sQuote</a></span><span class="op">(</span><span class="fu"><a href="../reference/make_parq_url.html">make_parq_url</a></span><span class="op">(</span><span class="st">"gene2go"</span><span class="op">)</span>, q<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">z</span> <span class="op">=</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbSendQuery.html" class="external-link">dbSendQuery</a></span><span class="op">(</span><span class="va">con</span>, <span class="va">stmt</span><span class="op">)</span></span>
 <span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbFetch.html" class="external-link">dbFetch</a></span><span class="op">(</span><span class="va">z</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##   tax_id gene_id symbol locus_tag synonyms</span></span>
@@ -150,23 +160,16 @@
 <span><span class="co">## 1 ORMDL sphingolipid biosynthesis regulator 3                   O</span></span>
 <span><span class="co">## 2 ORMDL sphingolipid biosynthesis regulator 3                   O</span></span>
 <span><span class="co">## 3 ORMDL sphingolipid biosynthesis regulator 3                   O</span></span>
-<span><span class="co">##    other_designations modification_date feature_type tax_id gene_id      go_id</span></span>
-<span><span class="co">## 1 ORM1-like protein 3          20241102            -   9606   94103 GO:0035579</span></span>
-<span><span class="co">## 2 ORM1-like protein 3          20241102            -   9606   94103 GO:0030667</span></span>
-<span><span class="co">## 3 ORM1-like protein 3          20241102            -   9606   94103 GO:0005886</span></span>
-<span><span class="co">##   evidence go_qualifier             go_description pubmed_id  category</span></span>
-<span><span class="co">## 1      TAS   located_in  specific granule membrane         - Component</span></span>
-<span><span class="co">## 2      TAS   located_in secretory granule membrane         - Component</span></span>
-<span><span class="co">## 3      TAS   located_in            plasma membrane         - Component</span></span></code></pre>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbClearResult.html" class="external-link">dbClearResult</a></span><span class="op">(</span><span class="va">z</span><span class="op">)</span></span>
-<span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co">##    other_designations modification_date feature_type</span></span>
+<span><span class="co">## 1 ORM1-like protein 3          20241102            -</span></span>
+<span><span class="co">## 2 ORM1-like protein 3          20241102            -</span></span>
+<span><span class="co">## 3 ORM1-like protein 3          20241102            -</span></span></code></pre>
 </div>
 <div class="section level4">
 <h4 id="queries-to-local-cache">Queries to local cache<a class="anchor" aria-label="anchor" href="#queries-to-local-cache"></a>
 </h4>
 <p>The <code>get_local_table</code> will retrieve parquet from the OSN bucket if needed.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">BiocFileCache</span><span class="op">)</span></span>
 <span><span class="va">ca</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocFileCache/man/BiocFileCache-class.html" class="external-link">BiocFileCache</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">con</span> <span class="op">=</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
@@ -189,7 +192,7 @@
 <span><span class="co">## <span style="color: #949494;">#   modification_date &lt;chr&gt;, feature_type &lt;chr&gt;, tax_id.y &lt;dbl&gt;, go_id &lt;chr&gt;,</span></span></span>
 <span><span class="co">## <span style="color: #949494;">#   evidence &lt;chr&gt;, go_qualifier &lt;chr&gt;, go_description &lt;chr&gt;, pubmed_id &lt;chr&gt;,</span></span></span>
 <span><span class="co">## <span style="color: #949494;">#   category &lt;chr&gt;</span></span></span></code></pre>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
